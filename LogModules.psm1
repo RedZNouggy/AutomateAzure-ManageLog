@@ -1,3 +1,31 @@
+<#
+.SYNOPSIS
+    Starts a PowerShell transcript with automatic log file rotation.
+
+.DESCRIPTION
+    The Start-Logging function initiates PowerShell session logging using the Start-Transcript cmdlet and manages up to three rotating log files.
+    It checks whether the specified log files exist and whether their sizes exceed a defined limit. If all logs exist and are over the limit, it deletes the oldest one and starts logging into it again.
+    
+    This is useful for maintaining consistent logs in long-running or recurring scripts without allowing log files to grow indefinitely.
+
+.PARAMETER LogFile1
+    Path to the primary log file.
+
+.PARAMETER LogFile2
+    Path to the secondary log file, used if LogFile1 exceeds the size limit.
+
+.PARAMETER LogFile3
+    Path to the tertiary log file, used if both LogFile1 and LogFile2 exceed the size limit.
+
+.PARAMETER LimitSize
+    Maximum allowed size for a log file in bytes before rotating to the next file. Default is 10MB.
+
+.EXAMPLE
+    Start-Logging -LogFile1 "C:\Logs\log1.txt" -LogFile2 "C:\Logs\log2.txt" -LogFile3 "C:\Logs\log3.txt"
+
+    Starts a PowerShell transcript and writes to the appropriate log file depending on file size and availability.
+#>
+
 function Start-Logging {
     [CmdletBinding()]
     param (
@@ -55,7 +83,7 @@ function Start-Logging {
         if ((Test-Path -Path $LogFile1) -and (-not(Test-Path -Path $LogFile2)) -and (-not(Test-Path -Path $LogFile3))) {
             if ($SizeFileLog1 -gt $LimitSize) {
                 Start-Transcript -Append -Path $LogFile2 -Force
-                Write-Host "[+] Started transcript on $LogFile2"
+                Write-Host "[+] Started transcript on $LogFile2" -ForegroundColor Green
             }
             else {
                 Start-Transcript -Append -Path $LogFile1 -Force
@@ -106,5 +134,4 @@ function Start-Logging {
             Write-Host "[+] Started transcript on $LogFile2" -ForegroundColor Green
         }
     }
-    Stop-Transcript
 }
