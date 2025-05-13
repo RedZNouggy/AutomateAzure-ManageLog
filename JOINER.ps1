@@ -11,10 +11,8 @@ Begin {
     Remove-Module * -ErrorAction SilentlyContinue
     $error.Clear()
     Clear-Host
-    $Username = "<>"
+    $Username = "<USERNAMEDIRECTORY>"
 
-    $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-    $InstallerScript = Join-Path -Path $ScriptDir -ChildPath "Install-LogModules.ps1"
     if (-not (Get-Command Start-Logging -ErrorAction SilentlyContinue)) {
         $ModuleName  = "LogModules"
         $ModuleVersion = '1.0.0'
@@ -58,6 +56,7 @@ Begin {
         if ($NeedsInstall) {
             if (-not (Test-Path $TargetDir)) {
                 New-Item -Path $TargetDir -ItemType Directory -Force | Out-Null
+                Write-Host "[i] Created $TargetDir" -ForegroundColor Blue
             }
             $ModuleFiles = @("LogModules.psm1", "LogModules.psd1")
             foreach ($file in $ModuleFiles) {
@@ -79,10 +78,6 @@ Begin {
                 Write-Error "[-] Failed to import module after install: $_"
                 exit 1
             }
-        }
-        else {
-            Write-Error "[-] Required installer script not found: $InstallerScript"
-            exit 1
         }
     }
     Start-Logging -LogFile1 "C:\Users\$Username\Desktop\JOINER-1.log" `
@@ -122,23 +117,24 @@ Process {
     $SiteID = "<>"
     $listIdJOINER = "<>"
     $JOINER = Get-MgSiteListItem -SiteId $siteId -ListId $listIdJOINER -ExpandProperty Fields -All 
-    $MyEmailAddress = "<>"
+    $MyEmailAddress = "<MYEMAIL>"
     $Body = ""
+    $ErrorList = ""
     foreach ($user in $JOINER)
     {
         $UserFields = $user.Fields.AdditionalProperties
         if ($UserFields.TRAITEPOWERSHELL -like $false) {
-            if ( Get-ADOrganizationalUnit -LDAPFilter "(distinguishedName=OU=$($UserFields.SERVICE),OU=PROJET_USERS,DC=domain,DC=name)") {
+            if ( Get-ADOrganizationalUnit -LDAPFilter "(distinguishedName=OU=$($UserFields.SERVICE),OU=PROJET_USERS,DC=<DOMAIN>,DC=<DOMAIN>)") {
                 Write-Host "[i] The OU $($UserFields.SERVICE) has already been created" -ForegroundColor Blue
             }
             $Password = "Pr0j3t_U5ers@$(Get-Random -Minimum 1000 -Maximum 9999)"
             $SecurePassword = ConvertTo-SecureString -AsPlainText $Password -Force
             $SamAccountName = "$(($UserFields.NOM).ToLower())" + "." + "$(($UserFields.PRENOM).ToLower())"
             $DisplayName = "$($UserFields.NOM)" + " $($UserFields.PRENOM)"
-            $PrincipalName = $SamAccountName + "@domain.name"
+            $PrincipalName = $SamAccountName + "@<DOMAIN>.<DOMAIN>"
             New-ADUser  -Name $DisplayName `
                         -Surname $UserFields.NOM `
-                        -Path "OU=$($UserFields.SERVICE),OU=PROJET_USERS,DC=domain,DC=name" `
+                        -Path "OU=$($UserFields.SERVICE),OU=PROJET_USERS,DC=<DOMAIN>,DC=<DOMAIN>" `
                         -SamAccountName $SamAccountName `
                         -Department $UserFields.SERVICE `
                         -DisplayName $DisplayName `
@@ -154,7 +150,7 @@ Process {
             }
             else {
                 Write-Error "[-] An error occurred during the user creation: $($users.SamAccountName)"
-                exit 1
+                $ErrorList += "<br> $($user.SamAccountName)"
             }
             Update-MgSiteListItemField -SiteId $siteId -ListId $listIdJOINER -ListItemId $user.Id -BodyParameter @{"TRAITEPOWERSHELL"="True"} 
             Write-Host "[i] The user $($UserFields.NOM) $($UserFields.PRENOM) updated field : TRAITEPOWERSHELL to True" -ForegroundColor Blue
@@ -165,31 +161,47 @@ Process {
             Write-Host "[!] The user '$($UserFields.NOM) $($UserFields.PRENOM)' has already been processed by the script" -ForegroundColor Yellow
         }
     } 
-    
-    if ($Body -ne "") {
-        $params = @{
-            Message = @{
-                Subject = "New JOINERS LIST"
-                Body = @{
-                    ContentType = "HTML"
-                    Content = "
-                    HELLO : <br><br>
-                    <br><br>
-                    This is the list of new joiners : $Body"
-                }
-                ToRecipients = @(
-                    @{
-                        EmailAddress = @{
-                            Address = "$MyEmailAddress"
-                        }
-                    }
-                )
+
+    if ($ErrorList -ne "") {
+        $Subject = "New JOINERS List & Errors"
+        $Content = @"
+        Hello, <br><br>
+
+        <strong style="color:green;">This is the list of new joiners that has been successfully processed by the script:</strong><br>
+        <span style="color:darkgreen;">$Body</span>
+        <br><br>
+
+        <strong style="color:red;">The joiner script has failed during the user creation of :</strong><br>
+        <span style="color:crimson;">$ErrorList</span>
+"@
+    } 
+    else { 
+        $Subject = "New JOINERS List"
+        $Content = @"
+        Hello, <br><br>
+
+        <strong style="color:green;">This is the list of new joiners that has been successfully processed by the script :</strong><br>
+        <span style="color:darkgreen;">$Body</span>
+"@
+    }
+    $params = @{
+        Message = @{
+            Subject = $Subject
+            Body = @{
+                ContentType = "HTML"
+                Content = $Content
             }
+            ToRecipients = @(
+                @{
+                    EmailAddress = @{
+                        Address = "$MyEmailAddress"
+                    }
+                }
+            )
         }
-        Send-MgUserMail -UserId "$MyEmailAddress" -BodyParameter $params     
-        Write-Host "[+] Mail sent to $MyEmailAddress" -ForegroundColor Green
-    }   
-    
+    }
+    Send-MgUserMail -UserId "$MyEmailAddress" -BodyParameter $params      
+    Write-Host "[+] Joiner List - Mail sent to $MyEmailAddress" -ForegroundColor Green
 }
 
 End {
