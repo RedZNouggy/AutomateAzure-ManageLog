@@ -13,7 +13,7 @@
 - [Part 2: LEAVER.ps1](#part-2-leaverps1)
 - [Leaver Installation](#leaver-installation)
 - [Email Behavior](#email-behavior)
-- [License](https://github.com/RedZNouggy/Log-Manager/blob/main/LICENSE.MD)
+- [License](https://github.com/RedZNouggy/AutomateAzure-ManageLog/blob/main/LICENSE.MD)
 
 ## Features
 
