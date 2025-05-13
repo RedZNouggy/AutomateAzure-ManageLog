@@ -1,7 +1,7 @@
 <#
 .DESCRIPTION
     This script import users from a sharepoint into your local AD & send an email
-    The script has been created by Samuel PAGES
+    The script has been created by Samuel PAGES 
     Date : 25/03/2025
     Edited : 23/04/2025
 #>
@@ -11,10 +11,8 @@ Begin {
     Remove-Module * -ErrorAction SilentlyContinue
     $error.Clear()
     Clear-Host
-    $Username = "<>"
+    $Username = "<USERNAMEDIRECTORY>"
 
-    $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-    $InstallerScript = Join-Path -Path $ScriptDir -ChildPath "Install-LogModules.ps1"
     if (-not (Get-Command Start-Logging -ErrorAction SilentlyContinue)) {
         $ModuleName  = "LogModules"
         $ModuleVersion = '1.0.0'
@@ -80,13 +78,9 @@ Begin {
                 exit 1
             }
         }
-        else {
-            Write-Error "[-] Required installer script not found: $InstallerScript"
-            exit 1
-        }
     }
-    Start-Logging -LogFile1 "C:\Users\$Username\Desktop\LEAVER.log" `
-                  -LogFile2 "C:\Users\$Username\Desktop\LEAVER.log" `
+    Start-Logging -LogFile1 "C:\Users\$Username\Desktop\LEAVER-1.log" `
+                  -LogFile2 "C:\Users\$Username\Desktop\LEAVER-2.log" `
                   -LogFile3 "C:\Users\$Username\Desktop\LEAVER-3.log"
     function EnsureModule {
         param (
@@ -120,8 +114,9 @@ Process {
     $listIdLEAVER = "<>"
     $LEAVER = Get-MgSiteListItem -SiteId $siteId -ListId $listIdLEAVER -ExpandProperty Fields -All 
     $Body = ""
-    $MyEmail = "<>"
-    $SendEmail = $false
+    $ErrorList1 = ""
+    $ErrorList2 = ""
+    $MyEmailAddress = "<EMAIL>"
     foreach ($user in $LEAVER)
     {
         $UserFields = $user.Fields.AdditionalProperties
@@ -134,40 +129,63 @@ Process {
                     Write-Host "[+] The account $($user.Name) has been successfully disabled." -ForegroundColor Green
                     Update-MgSiteListItemField -SiteId $siteId -ListId $listIdLEAVER -ListItemId 1 -BodyParameter @{"TRAITEPOWERSHELL"="True"} 
                     $Body +=  "<br> $($UserFields.NOM) $($UserFields.PRENOM)"
-                    $SendEmail = $true
                 }
                 else {
-                    Write-Host "[-] An error occurred trying to disabling the account : $($user.Name)" -ForegroundColor Red
+                    Write-Error "[-] An error occurred trying to disabling the account : $($user.Name)" -ForegroundColor Red
+                    $ErrorList1 += "<br> $($user.Name) ($($UserFields.MAILDEPART))"
                 }
             } else {
-                Write-Host "[-] No user has been found with the following email address : $($UserFields.MAILDEPART)" -ForegroundColor Red
+                Write-Error "[-] No user has been found with the following email address : $($UserFields.MAILDEPART)" -ForegroundColor Red
+                $ErrorList2 += "<br> $($UserFields.MAILDEPART)"
             }
         }
     }
     
-    if ($SendEmail -eq $true) {
-        $params = @{
-            Message = @{
-                Subject = "New LEAVERS LIST"
-                Body = @{
-                    ContentType = "HTML"
-                    Content = "
-                    HELLO : <br><br>
-                    <br><br>
-                    This is the list of new LEAVERS : $Body"
-                }
-                ToRecipients = @(
-                    @{
-                        EmailAddress = @{
-                            Address = "$MyEmail"
-                        }
-                    }
-                )
-            }
-        }
-        Send-MgUserMail -UserId $MyEmail -BodyParameter $params     
-        Write-Host "[+] Mail sent to $MyEmail" -ForegroundColor Green
+    if(($ErrorList1 -ne "") -or ($ErrorList2 -ne "")) {
+        $Subject = "New LEAVERS List & Errors"
+        $Content = @"
+        Hello, <br><br>
+
+        <strong style="color:green;">This is the list of leavers that has been successfully processed by the script:</strong><br>
+        <span style="color:darkgreen;">$Body</span>
+        <br><br>
+
+        <strong style='color:red;'>An error occurred trying to disable the following accounts :</strong><br>
+        <span style='color:crimson;'>$ErrorList1</span>
+        <br><br>
+
+        <strong style='color:red;'>No user has been found with the following email addresses :</strong><br>
+        <span style='color:crimson;'>$ErrorList2</span>
+"@
     }
+    else { 
+        $Subject = "New LEAVERS List"
+        $Content = @"
+        Hello, <br><br>
+
+        <strong style="color:green;">This is the list of leavers that has been successfully processed by the script:</strong><br>
+        <span style="color:darkgreen;">$Body</span>
+        <br><br>
+"@
+    }
+    $params = @{
+        Message = @{
+            Subject = $Subject
+            Body = @{
+                ContentType = "HTML"
+                Content = $Content
+            }
+            ToRecipients = @(
+                @{
+                    EmailAddress = @{
+                        Address = "$MyEmailAddress"
+                    }
+                }
+            )
+        }
+    }
+    Send-MgUserMail -UserId "$MyEmailAddress" -BodyParameter $params      
+    Write-Host "[+] Leavers List - Mail sent to $MyEmailAddress" -ForegroundColor Green
 }
 
 End {
