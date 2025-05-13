@@ -14,7 +14,6 @@
 - [Part 2: LEAVER.ps1](#part-2-leaverps1)
 - [Leaver Installation](#leaver-installation)
 - [Email Behavior](#email-behavior)
-- [Contributing](#contributing)
 - [License](https://github.com/RedZNouggy/Log-Manager/blob/main/LICENSE.MD)
 
 ## Features
