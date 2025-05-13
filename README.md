@@ -12,7 +12,7 @@
 - [Part 1: JOINER.ps1](#part-1-joinerps1)
 - [Part 2: LEAVER.ps1](#part-2-leaverps1)
 - [Installation](#installation)
-- [Usage](#usage)
+- [Email Behavior](#email-behavior)
 - [Contributing](#contributing)
 - [License](#license)
 
