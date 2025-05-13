@@ -4,6 +4,7 @@
 ## Introduction
 
 **Log-Manager** is a PowerShell-based toolkit designed to streamline log management and automate routine administrative tasks across Microsoft services such as Azure, Power Automate, SharePoint, and Microsoft Forms (MForms).
+The Environment requires some setup ! 
 
 ## Summary
 
