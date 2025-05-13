@@ -63,16 +63,10 @@ git clone https://github.com/RedZNouggy/Log-Manager.git
 cd Log-Manager
 ```
 
-2. Install dependencies:
+2. Replace placeholders in the script:
+- `<USERNAMEDIRECTORY>`, `<SiteId>`, `<DOMAIN>`, `<MYEMAIL>`,...`
 
-```powershell
-Install-Module Microsoft.Graph -Scope CurrentUser
-```
-
-3. Replace placeholders in the script:
-- `<USERNAMEDIRECTORY>`, `<SiteId>`, `<DOMAIN>`, `<MYEMAIL>`, `<clientId>`, `<thumbprint>`
-
-4. Prepare your environment:
+3. Prepare your environment:
 - OU structure for user accounts
 - Valid certificate-based authentication for Microsoft Graph
 
@@ -88,3 +82,60 @@ Script will:
 - Send results via email
 
 ---
+
+## Part 2: LEAVER.ps1
+
+### Explanation
+
+Automates offboarding by:
+
+- Connecting to Microsoft Graph
+- Fetching SharePoint list of departing users
+- Disabling corresponding AD accounts
+- Logging all actions
+- Sending HTML email report with success and error summary
+
+### Installation
+
+Same setup as `JOINER.ps1`:
+
+```powershell
+git clone https://github.com/RedZNouggy/Log-Manager.git
+cd Log-Manager
+```
+
+Customize fields in script:
+- `<USERNAMEDIRECTORY>`, `<EMAIL>`, `<SiteId>`, `<DOMAIN>`...
+
+### How to Start
+
+```powershell
+.\LEAVER.ps1
+```
+
+Script will:
+- Disable existing AD accounts matching SharePoint entries
+- Update SharePoint field `TRAITEPOWERSHELL`
+- Send email with lists of successes and failures
+
+---
+
+## Utility Function: Ensure-Module
+
+### Purpose
+
+`Ensure-Module` is a helper function used in both JOINER and LEAVER scripts to make sure required PowerShell modules are available.
+
+### Behavior
+
+- Checks if a module is already installed
+- Installs it if missing (scope: current user)
+- Imports the module once verified
+
+### Example
+
+```powershell
+EnsureModule -ModuleName 'Microsoft.Graph.Users.Actions'
+```
+
+This function simplifies module management and reduces external setup friction.
