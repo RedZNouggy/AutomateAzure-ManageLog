@@ -15,7 +15,7 @@
 - [Leaver Installation](#leaver-installation)
 - [Email Behavior](#email-behavior)
 - [Contributing](#contributing)
-- [License]()
+- [License](https://github.com/RedZNouggy/Log-Manager/blob/main/LICENSE.MD)
 
 ## Features
 
