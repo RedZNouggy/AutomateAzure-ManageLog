@@ -10,8 +10,9 @@
 - [Features](#features)
 - [Detailed Module: Start-Logging](#detailed-module-start-logging)
 - [Part 1: JOINER.ps1](#part-1-joinerps1)
+- [Installation](#joiner-installation)
 - [Part 2: LEAVER.ps1](#part-2-leaverps1)
-- [Installation](#installation)
+- [Installation](#leaver-installation)
 - [Email Behavior](#email-behavior)
 - [Contributing](#contributing)
 - [License](#license)
@@ -54,7 +55,7 @@ Automates onboarding by:
 - Logging all actions
 - Sending HTML email summary
 
-### Installation
+### Joiner Installation
 
 1. Clone the repo:
 
@@ -95,7 +96,7 @@ Automates offboarding by:
 - Logging all actions
 - Sending HTML email report with success and error summary
 
-### Installation
+### Leaver Installation
 
 Same setup as `JOINER.ps1`:
 
