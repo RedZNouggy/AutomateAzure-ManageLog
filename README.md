@@ -1,5 +1,4 @@
-
-# Log-Manager
+# Automate Azure & Manage Logs
 
 ## Introduction
 
