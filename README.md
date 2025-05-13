@@ -15,7 +15,7 @@
 - [Leaver Installation](#leaver-installation)
 - [Email Behavior](#email-behavior)
 - [Contributing](#contributing)
-- [License](#license)
+- [License]()
 
 ## Features
 
